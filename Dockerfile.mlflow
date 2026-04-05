@@ -1,0 +1,14 @@
+FROM python:3.12-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /app
+
+RUN pip install --upgrade pip \
+    && pip install mlflow==2.22.1 psycopg[binary]==3.2.12
+
+EXPOSE 5000
+
+CMD ["sh", "-lc", "mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri ${MLFLOW_BACKEND_STORE_URI:-sqlite:////app/data/mlflow.db} --default-artifact-root ${MLFLOW_DEFAULT_ARTIFACT_ROOT:-/app/mlruns}"]

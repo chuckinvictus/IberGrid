@@ -1,0 +1,87 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: ibergrid
+      POSTGRES_USER: ibergrid
+      POSTGRES_PASSWORD: ibergrid
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ibergrid -d ibergrid"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    environment:
+      MLFLOW_BACKEND_STORE_URI: sqlite:////app/data/mlflow.db
+      MLFLOW_DEFAULT_ARTIFACT_ROOT: /app/mlruns
+    volumes:
+      - ./data:/app/data
+      - ./mlruns:/app/mlruns
+    ports:
+      - "5000:5000"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    environment:
+      IBERGRID_DATABASE_URL: postgresql+psycopg://ibergrid:ibergrid@postgres:5432/ibergrid
+      IBERGRID_DATA_ROOT: /app/data
+      IBERGRID_ARTIFACTS_ROOT: /app/artifacts
+      IBERGRID_MLFLOW_TRACKING_URI: http://mlflow:5000
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./mlruns:/app/mlruns
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      IBERGRID_DATABASE_URL: postgresql+psycopg://ibergrid:ibergrid@postgres:5432/ibergrid
+      IBERGRID_DATA_ROOT: /app/data
+      IBERGRID_ARTIFACTS_ROOT: /app/artifacts
+      IBERGRID_MLFLOW_TRACKING_URI: http://mlflow:5000
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./mlruns:/app/mlruns
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mlflow:
+        condition: service_started
+
+  web:
+    image: node:22
+    working_dir: /app
+    command: >
+      bash -lc "npm install &&
+      npm --workspace apps/web run dev -- --hostname 0.0.0.0 --port 3000"
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://api:8000
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:

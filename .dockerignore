@@ -1,0 +1,15 @@
+.git
+.venv
+.env
+.env.*
+!.env.example
+!.env.prod.example
+node_modules
+apps/web/.next
+__pycache__
+*.pyc
+.pytest_cache
+lightning_logs
+data
+artifacts
+mlruns

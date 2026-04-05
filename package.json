@@ -1,0 +1,21 @@
+{
+  "name": "ibergrid-pvpc-intelligence-platform",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace apps/web run dev",
+    "build:web": "npm --workspace apps/web run build",
+    "typecheck:web": "npm --workspace apps/web run typecheck",
+    "test:py": "python3.12 -m pytest",
+    "api": "python3.12 -m uvicorn ibergrid_api.main:app --reload --app-dir apps/api/src",
+    "worker": "python3.12 -m ibergrid_worker.main serve",
+    "ml:refresh": "python3.12 -m ibergrid_ml.cli refresh --days 120",
+    "ml:backfill": "python3.12 -m ibergrid_ml.cli backfill --years 2",
+    "ml:reconcile": "python3.12 -m ibergrid_ml.cli reconcile --days 14",
+    "ml:train": "python3.12 -m ibergrid_ml.cli train",
+    "ml:publish": "python3.12 -m ibergrid_ml.cli publish",
+    "ml:status": "python3.12 -m ibergrid_ml.cli status"
+  }
+}
