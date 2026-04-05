@@ -10,6 +10,14 @@ It shows:
 - model performance
 - source status
 
+## Screenshots
+
+![IberGrid dashboard overview](docs/screenshot1.png)
+
+![IberGrid forecast and market panels](docs/screenshot2.png)
+
+![IberGrid status and performance view](docs/screenshot3.png)
+
 ## Technologies
 
 - Python 3.12
